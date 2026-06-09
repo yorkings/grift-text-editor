@@ -27,8 +27,7 @@ void insertNewLine(Editor &editor){
   editor.cursorCol=0;
 }
 
-void moveCursorLeft(Editor& editor)
-{
+void moveCursorLeft(Editor& editor){
     if(editor.cursorCol > 0)
     {
         editor.cursorCol--;
@@ -42,7 +41,31 @@ void moveCursorLeft(Editor& editor)
 }
 
 void moveCursorRight(Editor &editor){
-  std::string &currentLine = editor.lines[editor.cursorRow];
-  if(editor.cursorCol<currentLine.size())
-  editor.cursorCol++;
+    if(editor.cursorCol < editor.lines[editor.cursorRow].size())
+    {
+        editor.cursorCol++;
+    }
+    else if(editor.cursorRow < editor.lines.size() - 1)
+    {
+        editor.cursorRow++;
+        editor.cursorCol = 0;
+    }
+}
+
+void moveCursorUp(Editor& editor){
+    if(editor.cursorRow == 0)
+        return;
+    int desiredCol = editor.cursorCol;
+    editor.cursorRow--;
+    int lineLength = editor.lines[editor.cursorRow].size();
+    editor.cursorCol = std::min(desiredCol, lineLength);
+}
+
+void moveCursorDown(Editor& editor){
+    if(editor.cursorRow == editor.lines.size() - 1)
+        return;
+    int desiredCol = editor.cursorCol;
+    editor.cursorRow++;
+    int lineLength = editor.lines[editor.cursorRow].size();
+    editor.cursorCol = std::min(desiredCol, lineLength);
 }
