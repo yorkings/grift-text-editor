@@ -10,11 +10,24 @@ void insertChar(Editor& editor, char c) {
 }
 
 void removeChar(Editor &editor){
-  if(editor.cursorCol==0)
-  return;
-  std::string &line = editor.lines[editor.cursorRow];
-  line.erase(editor.cursorCol-1,1);
-  editor.cursorCol--;
+   if(editor.cursorRow == 0 && editor.cursorCol == 0){
+        return;
+    }
+    else if(editor.cursorCol > 0){
+        std::string &currentLine = editor.lines[editor.cursorRow];
+        currentLine.erase(editor.cursorCol - 1,1);
+        editor.cursorCol--;
+    }
+    else{
+        std::string &currentLine = editor.lines[editor.cursorRow];
+        std::string &previousLine = editor.lines[editor.cursorRow - 1];
+        int previousLineLength = previousLine.size();
+        previousLine += currentLine;
+        editor.lines.erase(editor.lines.begin() + editor.cursorRow);
+        editor.cursorRow--;
+        editor.cursorCol = previousLineLength;
+    }
+  
 }
 
 void insertNewLine(Editor &editor){
@@ -68,4 +81,14 @@ void moveCursorDown(Editor& editor){
     editor.cursorRow++;
     int lineLength = editor.lines[editor.cursorRow].size();
     editor.cursorCol = std::min(desiredCol, lineLength);
+}
+void updateScroll(Editor& editor,int screenHeight){
+    if(editor.cursorRow < editor.scrollRow)
+    {
+        editor.scrollRow = editor.cursorRow;
+    }
+    else if(editor.cursorRow >= editor.scrollRow + screenHeight)
+    {
+        editor.scrollRow = editor.cursorRow - screenHeight + 1;
+    }
 }

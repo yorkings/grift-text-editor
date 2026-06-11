@@ -9,8 +9,10 @@ struct Editor{
     std::vector<std::string> lines;
     int cursorRow;
     int cursorCol;
-    Editor() : cursorRow(0), cursorCol(0) {
-        lines.push_back(""); // Start with an empty line
+    int scrollRow;
+    Editor() : cursorRow(0), cursorCol(0),scrollRow(0) {
+        lines.push_back("");
+
     }
 };
 
@@ -31,6 +33,10 @@ struct KeyEvent {
     char character; 
 };
 
+struct  ScreenBuffer {
+    std::vector<std::string>rows;
+};
+
 KeyEvent readKey();
 
 void enableRawMode();
@@ -45,4 +51,6 @@ void moveCursorUp(Editor& editor);
 void moveCursorDown(Editor& editor);  
 void renderScreen(const Editor& editor);
 void clearScreen();  
+
+void updateScroll(Editor& editor,int screenHeight);
 

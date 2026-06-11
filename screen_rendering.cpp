@@ -26,10 +26,21 @@ void  moveTerminalCursor(int row, int col){
     std::cout << "\033[" << row + 1 << ";" << col + 1 << "H";
 }
 
+ScreenBuffer buildScreenBuffer(const Editor& editor,int screenHeight) {
+    ScreenBuffer buffer;
+    int start= editor.scrollRow;
+    int end=std::min(start+screenHeight,(int)editor.lines.size());
+    for(int i=start;i<end;i++){
+        buffer.rows.push_back(editor.lines[i]);
+    }
+    return buffer;
+}
+    
 
 void renderScreen(const Editor& editor) {
     clearScreen();
-    for (const auto &line : editor.lines) {
+    ScreenBuffer buffer = buildScreenBuffer(editor, 24); // Assuming a screen height of 24 lines
+    for (const auto &line : buffer.rows) {
         std::cout << line <<"\n";
     }
     moveTerminalCursor(editor.cursorRow, editor.cursorCol);
@@ -41,7 +52,7 @@ void renderScreen(const Editor& editor) {
         std::cout << "\033[7m" << currentChar << "\033[0m";        
         // Move cursor back so the terminal cursor doesn't overlap weirdly 
         // if you decide to show it later, or just leave it hidden.
-        moveTerminalCursor(editor.cursorRow, editor.cursorCol); 
+        moveTerminalCursor(editor.cursorRow-editor.scrollRow, editor.cursorCol); 
     }
     // Ensure system cursor is hidden for a clean look
     std::cout << "\033[?25l"; 
