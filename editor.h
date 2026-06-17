@@ -4,13 +4,22 @@
 #include<termios.h>
 #include <unistd.h>
 #include <algorithm>
+#include <cstdlib>
+
+constexpr int SCREEN_HEIGHT = 30;
+constexpr int SCREEN_WIDTH = 80;
 
 struct Editor{
     std::vector<std::string> lines;
     int cursorRow;
     int cursorCol;
     int scrollRow;
-    Editor() : cursorRow(0), cursorCol(0),scrollRow(0) {
+    int scrollCol;
+    std::string filename;
+    std::string statusMessage;
+    int statusMessageTimer;
+    bool waitingForInput;
+    Editor() : cursorRow(0), cursorCol(0),scrollRow(0),scrollCol(0), waitingForInput(false) {
         lines.push_back("");
 
     }
@@ -31,6 +40,7 @@ enum KeyType {
 struct KeyEvent {
     KeyType type;
     char character; 
+    bool ctrl;
 };
 
 struct  ScreenBuffer {
@@ -52,5 +62,14 @@ void moveCursorDown(Editor& editor);
 void renderScreen(const Editor& editor);
 void clearScreen();  
 
-void updateScroll(Editor& editor,int screenHeight);
+void normalizeCursor(Editor& editor);
+void moveTerminalCursor(int row, int col);
+void refreshCursor(Editor& editor);
 
+void updateScroll(Editor& editor,int screenHeight);
+void handle_input(Editor &editor, KeyEvent event,bool &running);
+
+// file handling functions
+bool loadFile(Editor &editor, const std::string &filename);
+bool saveFile(const Editor &editor);
+std::string promptForFilename();

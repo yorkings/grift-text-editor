@@ -7,6 +7,7 @@ void enableRawMode() {
     tcgetattr(STDIN_FILENO, &originalTermios);
     struct termios raw = originalTermios;
     raw.c_lflag &= ~(ECHO | ICANON); // Disable echo and canonical mode
+    raw.c_iflag &= ~(IXON | ICRNL); // Disable Ctrl-S/Q and carriage return to newline translation
     raw.c_cc[VMIN] = 0; // Minimum number of bytes before read() returns
     raw.c_cc[VTIME] = 1; // Timeout for read() in tent
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
@@ -14,8 +15,8 @@ void enableRawMode() {
 
 void disableRawMode(){
     tcsetattr(STDIN_FILENO,TCSAFLUSH,&originalTermios);
+    std::cout << "\033[?25h"; // Show the cursor again
 }
-
 
 void clearScreen() {
     // Clear the console screen
@@ -39,10 +40,14 @@ ScreenBuffer buildScreenBuffer(const Editor& editor,int screenHeight) {
 
 void renderScreen(const Editor& editor) {
     clearScreen();
-    ScreenBuffer buffer = buildScreenBuffer(editor, 24); // Assuming a screen height of 24 lines
+    ScreenBuffer buffer = buildScreenBuffer(editor, SCREEN_HEIGHT);
     for (const auto &line : buffer.rows) {
         std::cout << line <<"\n";
     }
+    std::cout << "\033[7m";  // Reverse video
+    std::cout << editor.statusMessage.substr(0, 80);
+    std::cout << std::string(80 - editor.statusMessage.length(), ' ');
+    std::cout << "\033[0m";
     moveTerminalCursor(editor.cursorRow, editor.cursorCol);
     if (editor.cursorRow < editor.lines.size()) {
         char currentChar = ' ';
@@ -51,7 +56,6 @@ void renderScreen(const Editor& editor) {
         }
         std::cout << "\033[7m" << currentChar << "\033[0m";        
         // Move cursor back so the terminal cursor doesn't overlap weirdly 
-        // if you decide to show it later, or just leave it hidden.
         moveTerminalCursor(editor.cursorRow-editor.scrollRow, editor.cursorCol); 
     }
     // Ensure system cursor is hidden for a clean look

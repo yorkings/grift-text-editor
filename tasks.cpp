@@ -19,6 +19,8 @@ void removeChar(Editor &editor){
         editor.cursorCol--;
     }
     else{
+         if(editor.cursorRow == 0)
+            return;
         std::string &currentLine = editor.lines[editor.cursorRow];
         std::string &previousLine = editor.lines[editor.cursorRow - 1];
         int previousLineLength = previousLine.size();
@@ -51,6 +53,32 @@ void moveCursorLeft(Editor& editor){
         editor.cursorCol =
             editor.lines[editor.cursorRow].size();
     }
+}
+void normalizeCursor(Editor& editor){
+    if(editor.lines.empty()) {
+        editor.lines.push_back("");
+    }
+    if(editor.cursorRow < 0) {
+        editor.cursorRow = 0;
+    }
+
+    if(editor.cursorRow >= editor.lines.size()){
+        editor.cursorRow =
+            editor.lines.size() - 1;
+    }
+    int lineLength =editor.lines[editor.cursorRow].size();
+    if(editor.cursorCol < 0){
+        editor.cursorCol = 0;
+    }
+
+    if(editor.cursorCol > lineLength)
+    {
+        editor.cursorCol = lineLength;
+    }
+}
+void refreshCursor(Editor& editor){
+    normalizeCursor(editor);
+    updateScroll(editor, SCREEN_HEIGHT);
 }
 
 void moveCursorRight(Editor &editor){
@@ -90,5 +118,9 @@ void updateScroll(Editor& editor,int screenHeight){
     else if(editor.cursorRow >= editor.scrollRow + screenHeight)
     {
         editor.scrollRow = editor.cursorRow - screenHeight + 1;
+    }else if(editor.cursorCol < editor.scrollCol){
+        editor.scrollCol = editor.cursorCol;
+    }else if(editor.cursorCol >= editor.scrollCol + SCREEN_WIDTH){
+        editor.scrollCol = editor.cursorCol - SCREEN_WIDTH + 1;
     }
 }
